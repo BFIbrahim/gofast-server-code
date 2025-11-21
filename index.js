@@ -214,7 +214,6 @@ async function run() {
         app.post('/riders', async (req, res) => {
             const rider = req.body;
 
-            // check if this email already applied
             const existing = await ridersCollections.findOne({ email: rider.email });
 
             if (existing) {
@@ -246,7 +245,6 @@ async function run() {
                 const parcelId = req.params.parcelId;
                 const { riderId } = req.body;
 
-                // Find rider by id
                 const rider = await ridersCollections.findOne({
                     _id: new ObjectId(riderId)
                 });
@@ -255,18 +253,16 @@ async function run() {
                     return res.status(404).send({ message: "Rider not found" });
                 }
 
-                // Update parcel and set rider email
                 const parcelUpdate = await parcelCollection.updateOne(
                     { _id: new ObjectId(parcelId) },
                     {
                         $set: {
                             status: "Assigned Rider",
-                            assignedRider: rider.email     // <-- SET EMAIL HERE
+                            assignedRider: rider.email
                         }
                     }
                 );
 
-                // Update rider work status
                 const riderUpdate = await ridersCollections.updateOne(
                     { _id: new ObjectId(riderId) },
                     {
@@ -359,17 +355,15 @@ async function run() {
 
                 const newStatus = action === "approve" ? "approved" : "declined";
 
-                // update rider status
                 const result = await ridersCollections.updateOne(
                     { _id: new ObjectId(id) },
                     { $set: { status: newStatus } }
                 );
 
-                // if approved → update user role to rider
                 if (newStatus === "approved") {
                     const roleResult = await usersCollections.updateOne(
                         { email: email },
-                        { $set: { role: "rider" } }   // FIXED !!
+                        { $set: { role: "rider" } }  
                     );
 
                     console.log("Role Updated:", roleResult.matchedCount);
